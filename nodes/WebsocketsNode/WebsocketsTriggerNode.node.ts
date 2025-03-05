@@ -170,12 +170,12 @@ export class WebsocketsTriggerNode implements INodeType {
 
 				//@ts-ignore this is useless, i don't know why it is here
 				responsePromise.promise.then((data) => {
-					//check data content is string or not
-					if (typeof data.content !== 'string') {
+					//return if doesn't have content
+					if (!data.body?.content) {
 						return;
 					}
 					console.log('responsePromise send', data);
-					socket.send(data.content);
+					socket.send(data.body.content);
 				});
 
 				return responsePromise;
