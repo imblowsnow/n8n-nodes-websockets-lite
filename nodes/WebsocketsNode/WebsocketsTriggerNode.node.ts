@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import {
+	IDataObject,
 	IExecuteResponsePromiseData,
 	ITriggerFunctions,
 	ITriggerResponse,
@@ -169,13 +170,13 @@ export class WebsocketsTriggerNode implements INodeType {
 				const responsePromise = await this.helpers.createDeferredPromise<IExecuteResponsePromiseData>();
 
 				//@ts-ignore this is useless, i don't know why it is here
-				responsePromise.promise.then((data) => {
+				responsePromise.promise.then((data : IDataObject) => {
 					//return if doesn't have content
-					if (!data || !data.body?.content) {
+					if (!data || !data.content) {
 						return;
 					}
 					console.log('responsePromise send', data);
-					socket.send(data.body.content);
+					socket.send(data.content);
 				});
 
 				return responsePromise;
