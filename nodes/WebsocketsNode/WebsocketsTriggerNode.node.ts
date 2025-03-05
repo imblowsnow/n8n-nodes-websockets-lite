@@ -168,11 +168,11 @@ export class WebsocketsTriggerNode implements INodeType {
 			const creatreResponsePromise = async () => {
 				const responsePromise = await this.helpers.createDeferredPromise<IExecuteResponsePromiseData>();
 
-				// @ts-ignore
-				responsePromise.promise.then((data) => {
-					console.log('responsePromise send', data);
-					// socket.send(data.content); // i don't know why have to send back
-				});
+				// @ts-ignore this is useless, i don't know why it is here
+				// responsePromise.promise.then((data) => {
+				// 	console.log('responsePromise send', data);
+				// 	socket.send(data.content);
+				// });
 
 				return responsePromise;
 			}
