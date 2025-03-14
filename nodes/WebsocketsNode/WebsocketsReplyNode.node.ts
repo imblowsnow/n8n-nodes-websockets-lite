@@ -10,22 +10,31 @@ import WebSocket from 'ws';
 
 export class WebsocketsReplyNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Websockets Reply Node',
+		displayName: 'Websockets Send Node',
 		name: 'websocketsReplyNode',
 		group: ['transform'],
 		version: 1,
-		description: 'Websockets Reply',
+		description: 'Websockets Send',
 		defaults: {
-			name: 'Websockets Reply Node',
+			name: 'Websockets Send Node',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
 		properties: [
 			{
-				displayName: 'Reply Content',
-				name: 'replyContent',
+				displayName: 'Send Content',
+				name: 'content',
 				type: 'string',
 				default: '',
+				required: true,
+			},
+			{
+				displayName: 'Websocket Resource Field (Parameter Name)',
+				name: 'websocketResource',
+				type: 'string',
+				required: true,
+				default: 'ws',
+				description: 'WS resource field name given by trigger node',
 			},
 		],
 	};
@@ -45,11 +54,20 @@ export class WebsocketsReplyNode implements INodeType {
 			);
 		}
 
-		const replyContent = this.getNodeParameter('replyContent', 0) as string;
+		const items = this.getInputData();
 
-		this.sendResponse({
-			content: replyContent
-		})
+		let websocketResource = this.getNodeParameter('websocketResource', 0) as string;
+		let ws: WebSocket = items[0].json[websocketResource]
+		if (!ws){
+			throw new NodeOperationError(
+				this.getNode(),
+				`Execution error: No websocket resource received`,
+			);
+		}
+
+		const content = this.getNodeParameter('content', 0) as string;
+
+		ws.send(content)
 
 		return [[]]
 	}

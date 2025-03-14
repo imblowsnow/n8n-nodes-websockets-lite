@@ -5,7 +5,6 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import {
-	IExecuteResponsePromiseData,
 	ITriggerFunctions,
 	ITriggerResponse,
 } from 'n8n-workflow/dist/Interfaces';
@@ -165,27 +164,17 @@ export class WebsocketsTriggerNode implements INodeType {
 				return data.toString('utf8');
 			};
 
-			const creatreResponsePromise = async () => {
-				const responsePromise = await this.helpers.createDeferredPromise<IExecuteResponsePromiseData>();
-
-				// @ts-ignore
-				responsePromise.promise.then((data) => {
-					if (data && data.content){
-						// console.log('responsePromise send', data);
-						socket.send(data.content);
-					}
-				});
-
-				return responsePromise;
-			}
-
 			const pingData = this.getNodeParameter('pingData', '') as string;
 			const pingTimerSeconds = this.getNodeParameter('pingTimerSeconds', 60) as number;
 			const maxReConnectTimes = this.getNodeParameter('maxReConnectTimes', 5) as number;
 
 			socket.on('message', async (data: any) => {
-				const resultData = { event: 'message', data: await transformData(data) };
-				this.emit([this.helpers.returnJsonArray([resultData])], await creatreResponsePromise());
+				const resultData = {
+					event: 'message',
+					ws: socket,
+					data: await transformData(data)
+				};
+				this.emit([this.helpers.returnJsonArray([resultData])]);
 
 				if (isManual){
 					// 断开连接
@@ -196,8 +185,11 @@ export class WebsocketsTriggerNode implements INodeType {
 			let pingTimer: boolean | any = false;
 
 			socket.on('open', async () => {
-				const resultData = {event: 'open'};
-				this.emit([this.helpers.returnJsonArray([resultData])], await creatreResponsePromise());
+				const resultData = {
+					event: 'open',
+					ws: socket
+				};
+				this.emit([this.helpers.returnJsonArray([resultData])]);
 
 				if (initData) {
 					socket.send(initData);
@@ -231,7 +223,7 @@ export class WebsocketsTriggerNode implements INodeType {
 				}
 
 				const resultData = {event: 'close', code};
-				this.emit([this.helpers.returnJsonArray([resultData])], await creatreResponsePromise());
+				this.emit([this.helpers.returnJsonArray([resultData])]);
 
 				// 手动关闭的
 				if (isConfirmClose){
